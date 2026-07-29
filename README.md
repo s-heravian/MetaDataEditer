@@ -45,36 +45,9 @@ This repository uses GitHub Actions to automatically build and publish Docker im
    ```bash
    echo "YOUR_GITHUB_PAT" | docker login ghcr.io -u s-heravian --password-stdin
    ```
-3. Create a `docker-compose.yml` on your server using the published images:
-   ```yaml
-   version: '3.8'
-
-   services:
-     backend:
-       image: ghcr.io/s-heravian/metadataediter-backend:latest
-       ports:
-         - "8000:8000"
-       environment:
-         - TZ=Europe/Berlin
-         - PYTHONUNBUFFERED=1
-       volumes:
-         - uploads_data:/app/uploads
-       restart: unless-stopped
-
-     frontend:
-       image: ghcr.io/s-heravian/metadataediter-frontend:latest
-       ports:
-         - "80:80"
-       depends_on:
-         - backend
-       restart: unless-stopped
-
-   volumes:
-     uploads_data:
-   ```
-4. Start the services:
+3. Run the project using the production compose file:
    ```bash
-   docker compose up -d
+   docker compose -f docker-compose.prod.yml up -d
    ```
 
 ---
