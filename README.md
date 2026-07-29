@@ -36,16 +36,20 @@ docker compose up -d --build
 ```
 Navigate to `http://localhost:8080` in your web browser.
 
-### 2. Production Deployment using GitHub Container Registry (GHCR)
-This repository uses GitHub Actions to automatically build and publish Docker images to GHCR upon a new Release.
+### 2. Production Deployment (No Build Required)
+If you only want to run the application using pre-built images from GitHub Container Registry (GHCR), you **do not need to clone the entire repository**.
 
-**Steps to deploy using published images on your server:**
+**Steps to deploy on your server:**
 1. Generate a **Personal Access Token (PAT)** in GitHub with `read:packages` permissions.
 2. Login to GHCR on your server:
    ```bash
    echo "YOUR_GITHUB_PAT" | docker login ghcr.io -u s-heravian --password-stdin
    ```
-3. Run the project using the production compose file:
+3. Download the production compose file directly:
+   ```bash
+   curl -O https://raw.githubusercontent.com/s-heravian/MetaDataEditer/main/docker-compose.prod.yml
+   ```
+4. Start the services:
    ```bash
    docker compose -f docker-compose.prod.yml up -d
    ```
