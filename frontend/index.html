@@ -30,18 +30,7 @@
             </div>
         </section>
 
-        <section id="settings-section" class="glass-panel settings-panel">
-            <div class="settings-content">
-                <label for="target-country"><i class="fa-solid fa-earth-europe"></i> کشور مقصد برای جعل هویت (در صورت شناسایی ایران):</label>
-                <select id="target-country" class="form-select">
-                    <option value="DE" selected>آلمان (برلین)</option>
-                    <option value="FR">فرانسه (پاریس)</option>
-                    <option value="GB">انگلستان (لندن)</option>
-                    <option value="NL">هلند (آمستردام)</option>
-                    <option value="IT">ایتالیا (رم)</option>
-                </select>
-            </div>
-        </section>
+
 
         <div id="loader" class="loader hidden">
             <div class="spinner"></div>
@@ -51,9 +40,22 @@
         <section id="result-section" class="glass-panel hidden">
             <div class="result-header">
                 <h2><i class="fa-solid fa-table-list"></i> اطلاعات استخراج شده</h2>
-                <div>
-                    <button id="download-btn" class="btn btn-primary" style="margin-left: 10px;"><i class="fa-solid fa-download"></i> دانلود فایل پردازش شده</button>
-                    <button id="cleanup-btn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> پایان کار و حذف فایل</button>
+            </div>
+            
+            <div class="action-bar">
+                <div class="action-controls">
+                    <label for="target-country"><i class="fa-solid fa-earth-europe"></i> جعل هویت به:</label>
+                    <select id="target-country" class="form-select">
+                        <option value="DE" selected>آلمان</option>
+                        <option value="FR">فرانسه</option>
+                        <option value="GB">انگلستان</option>
+                        <option value="NL">هلند</option>
+                        <option value="IT">ایتالیا</option>
+                    </select>
+                </div>
+                <div class="action-buttons">
+                    <button id="download-btn" class="btn btn-primary"><i class="fa-solid fa-download"></i> پردازش و دانلود</button>
+                    <button id="cleanup-btn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> پایان کار</button>
                 </div>
             </div>
             

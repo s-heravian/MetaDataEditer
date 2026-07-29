@@ -141,7 +141,10 @@ downloadBtn.addEventListener('click', async () => {
     downloadBtn.disabled = true;
 
     try {
-        const response = await fetch(`${API_BASE}/process/${currentFilename}`);
+        const targetCountry = document.getElementById('target-country').value;
+        const processUrl = `${API_BASE}/process/${currentFilename}?target_country=${targetCountry}`;
+        
+        const response = await fetch(processUrl);
         if (!response.ok) {
             throw new Error('خطا در پردازش و دانلود فایل');
         }

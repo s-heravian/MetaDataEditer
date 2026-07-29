@@ -207,21 +207,29 @@ header p {
     color: white;
 }
 
-/* Settings Panel */
-.settings-panel {
-    margin: 20px auto;
-    padding: 15px 30px;
+/* Action Bar */
+.action-bar {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.settings-content {
+.action-controls {
     display: flex;
     align-items: center;
     gap: 15px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
 }
 
 .form-select {

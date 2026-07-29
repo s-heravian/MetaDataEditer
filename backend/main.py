@@ -184,7 +184,11 @@ async def process_file(file_name: str, target_country: str = "DE"):
         raise HTTPException(status_code=404, detail="File not found")
 
     try:
-        # 1. Read metadata
+        # Create a copy for processing
+        processed_path = os.path.join(UPLOAD_DIR, f"processed_{file_name}")
+        shutil.copy(file_path, processed_path)
+        
+        # 1. Read metadata from original
         result = subprocess.run(["exiftool", "-j", file_path], stdout=subprocess.PIPE, text=True)
         metadata = json.loads(result.stdout) if result.stdout else [{}]
         file_metadata = metadata[0] if isinstance(metadata, list) and len(metadata) > 0 else {}
@@ -199,8 +203,8 @@ async def process_file(file_name: str, target_country: str = "DE"):
         date_str = file_metadata.get('DateTimeOriginal') or file_metadata.get('CreateDate') or file_metadata.get('ModifyDate') or file_metadata.get('FileModifyDate')
         country_offset = get_country_offset(date_str, target_country)
         
-        # 2. Strip all metadata (keeps the original file safe in a temp way, but we use -overwrite_original)
-        subprocess.run(["exiftool", "-all=", "-overwrite_original", file_path], check=True)
+        # 2. Strip all metadata
+        subprocess.run(["exiftool", "-all=", "-overwrite_original", processed_path], check=True)
         
         # 3. If Iran detected, add spoofed metadata
         if has_iran:
@@ -222,10 +226,10 @@ async def process_file(file_name: str, target_country: str = "DE"):
                 f"-CountryCode={target_country}",
                 f"-Language={country_data['lang']}",
                 "-overwrite_original", 
-                file_path
+                processed_path
             ], check=True)
             
-        return FileResponse(file_path, media_type='application/octet-stream', filename=f"processed_{file_name}")
+        return FileResponse(processed_path, media_type='application/octet-stream', filename=f"processed_{file_name}")
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
