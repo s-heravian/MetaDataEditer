@@ -8,6 +8,7 @@ const resultSection = document.getElementById('result-section');
 const tableBody = document.querySelector('#metadata-table tbody');
 const searchInput = document.getElementById('search-input');
 const cleanupBtn = document.getElementById('cleanup-btn');
+const downloadBtn = document.getElementById('download-btn');
 
 // --- Drag & Drop logic ---
 dropZone.addEventListener('click', () => fileInput.click());
@@ -126,6 +127,56 @@ searchInput.addEventListener('input', (e) => {
             item.element.style.display = 'none';
         }
     });
+});
+
+// --- Download Logic ---
+downloadBtn.addEventListener('click', async () => {
+    if (!currentFilename) return;
+    
+    // Add simple loading state
+    const originalText = downloadBtn.innerHTML;
+    downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> در حال پردازش...';
+    downloadBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_BASE}/process/${currentFilename}`);
+        if (!response.ok) {
+            throw new Error('خطا در پردازش و دانلود فایل');
+        }
+        
+        // Get the blob from the response
+        const blob = await response.blob();
+        
+        // Try to get filename from content-disposition header if available, otherwise use default
+        let filename = `processed_${currentFilename}`;
+        const disposition = response.headers.get('content-disposition');
+        if (disposition && disposition.indexOf('filename=') !== -1) {
+            const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+            if (matches != null && matches[1]) {
+                filename = matches[1].replace(/['"]/g, '');
+            }
+        }
+        
+        // Create a temporary link to trigger download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        alert('فایل پردازش شد و در حال دانلود است. تمام متادیتاهای غیرضروری حذف شده و در صورت لزوم موقعیت ایران به آلمان تغییر یافته است.');
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        downloadBtn.innerHTML = originalText;
+        downloadBtn.disabled = false;
+    }
 });
 
 // --- Cleanup Logic ---
