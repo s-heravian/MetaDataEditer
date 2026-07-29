@@ -177,11 +177,16 @@ def get_country_offset(date_str, country_code: str) -> str:
     return country_data["std_offset"]
 
 @app.get("/process/{file_name}")
-async def process_file(file_name: str, target_country: str = "DE"):
-    """Processes the file to remove unnecessary metadata and spoof country if needed."""
+async def process_file(file_name: str, target_country: str = 'DE'):
     file_path = os.path.join(UPLOAD_DIR, file_name)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
+        
+    # Check unsupported formats
+    unsupported_exts = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx']
+    ext = os.path.splitext(file_name)[1].lower()
+    if ext in unsupported_exts:
+        raise HTTPException(status_code=400, detail="متاسفانه هسته پردازشی (ExifTool) از ویرایش و حذف متادیتا روی فایل‌های Office (مانند Word و Excel) پشتیبانی نمی‌کند. این فایل‌ها فقط قابلیت خواندن دارند.")
 
     try:
         # Create a copy for processing
@@ -253,5 +258,7 @@ async def process_file(file_name: str, target_country: str = "DE"):
         download_name = f"Document_{uuid.uuid4().hex[:8]}.pdf" if processed_path.lower().endswith('.pdf') else f"Media_{uuid.uuid4().hex[:8]}{os.path.splitext(processed_path)[1]}"
         return FileResponse(processed_path, media_type='application/octet-stream', filename=download_name)
         
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail="هسته پردازشی قادر به ویرایش یا ذخیره این فرمت فایل نیست.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")

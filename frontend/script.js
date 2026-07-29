@@ -146,7 +146,12 @@ downloadBtn.addEventListener('click', async () => {
         
         const response = await fetch(processUrl);
         if (!response.ok) {
-            throw new Error('خطا در پردازش و دانلود فایل');
+            let errorMsg = 'خطا در پردازش و دانلود فایل';
+            try {
+                const errData = await response.json();
+                if (errData.detail) errorMsg = errData.detail;
+            } catch(e) {}
+            throw new Error(errorMsg);
         }
         
         // Get the blob from the response
