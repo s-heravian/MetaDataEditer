@@ -54,7 +54,8 @@ async def upload_file(file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        return {"file_id": file_id, "filename": file.filename, "saved_path": filename}
+        is_office = ext.lower() in ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx']
+        return {"file_id": file_id, "filename": file.filename, "saved_path": filename, "is_office": is_office}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -186,7 +187,7 @@ async def process_file(file_name: str, target_country: str = 'DE'):
     unsupported_exts = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx']
     ext = os.path.splitext(file_name)[1].lower()
     if ext in unsupported_exts:
-        raise HTTPException(status_code=400, detail="متاسفانه هسته پردازشی (ExifTool) از ویرایش و حذف متادیتا روی فایل‌های Office (مانند Word و Excel) پشتیبانی نمی‌کند. این فایل‌ها فقط قابلیت خواندن دارند.")
+        raise HTTPException(status_code=400, detail="فرمت فایل پشتیبانی نمی‌شود.")
 
     try:
         # Create a copy for processing

@@ -15,6 +15,26 @@
         <div class="shape shape-3"></div>
     </div>
 
+    <!-- Office Modal -->
+    <div id="office-modal" class="modal hidden">
+        <div class="modal-content glass-panel">
+            <h2><i class="fa-solid fa-triangle-exclamation" style="color: #ff9800;"></i> فرمت پشتیبانی نشده</h2>
+            <p>
+                متاسفانه سیستم از ویرایش و حذف متادیتا روی فایل‌های Office پشتیبانی نمی‌کند.
+            </p>
+            <div style="font-size: 0.85em; margin-top: 15px; color: #bbb; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align: right;">
+                <strong style="color: #fff;"><i class="fa-solid fa-broom"></i> راهنمای پاکسازی دستی:</strong><br>
+                لطفاً فایل را در نرم‌افزار آفیس باز کنید، از منوی File وارد بخش Info شوید، ابزار Inspect Document را اجرا کرده و روی Remove All در بخش Document Properties کلیک کنید.
+                <br><br>
+                <small style="color: #ff9800;">(توجه: مسئولیت بررسی صحت عملکرد این روش و تایید پاکسازی کامل متادیتا کاملاً بر عهده کاربر می‌باشد).</small>
+            </div>
+            <div class="modal-actions" style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
+                <button id="view-meta-btn" class="btn btn-primary"><i class="fa-solid fa-eye"></i> فقط نمایش متادیتا</button>
+                <button id="cancel-office-btn" class="btn btn-danger"><i class="fa-solid fa-times"></i> انصراف</button>
+            </div>
+        </div>
+    </div>
+
     <main class="container">
         <header class="glass-panel">
             <h1><i class="fa-solid fa-fingerprint"></i> متادیتا</h1>

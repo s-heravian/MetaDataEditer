@@ -45,6 +45,10 @@ fileInput.addEventListener('change', function() {
 // --- Upload and Process ---
 async function handleFile(file) {
     // UI updates
+    document.querySelector('.action-bar').classList.remove('hidden'); // Reset action bar if it was hidden
+    document.querySelector('.action-controls').classList.remove('hidden');
+    document.getElementById('download-btn').classList.remove('hidden');
+    
     dropZone.classList.add('hidden');
     resultSection.classList.add('hidden');
     loader.classList.remove('hidden');
@@ -63,6 +67,12 @@ async function handleFile(file) {
         
         const uploadData = await uploadRes.json();
         currentFilename = uploadData.saved_path;
+
+        if (uploadData.is_office) {
+            loader.classList.add('hidden');
+            document.getElementById('office-modal').classList.remove('hidden');
+            return; // Wait for user to click a modal button
+        }
 
         // 2. Get Metadata
         const metaRes = await fetch(`${API_BASE}/metadata/${currentFilename}`);
@@ -83,6 +93,36 @@ async function handleFile(file) {
         dropZone.classList.remove('hidden');
     }
 }
+
+// Modal Handlers
+document.getElementById('cancel-office-btn').addEventListener('click', () => {
+    document.getElementById('office-modal').classList.add('hidden');
+    dropZone.classList.remove('hidden');
+    currentFilename = null;
+});
+
+document.getElementById('view-meta-btn').addEventListener('click', async () => {
+    document.getElementById('office-modal').classList.add('hidden');
+    document.querySelector('.action-controls').classList.add('hidden'); // Hide spoofing dropdown
+    document.getElementById('download-btn').classList.add('hidden'); // Hide download button
+    // The cleanup button remains visible within the action-bar
+    
+    loader.classList.remove('hidden');
+    try {
+        const metaRes = await fetch(`${API_BASE}/metadata/${currentFilename}`);
+        if (!metaRes.ok) throw new Error('خطا در استخراج متادیتا');
+
+        const metadata = await metaRes.json();
+        renderTable(metadata);
+
+        loader.classList.add('hidden');
+        resultSection.classList.remove('hidden');
+    } catch (error) {
+        alert(error.message);
+        loader.classList.add('hidden');
+        dropZone.classList.remove('hidden');
+    }
+});
 
 // --- Render and Search ---
 let allMetadataRows = [];

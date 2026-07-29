@@ -333,3 +333,26 @@ table td:last-child {
 #result-section {
     animation: fadeIn 0.5s ease-out forwards;
 }
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal.hidden {
+    display: none;
+}
+.modal-content {
+    max-width: 500px;
+    padding: 30px;
+    text-align: right;
+}
+.modal-content h2 {
+    margin-bottom: 15px;
+    text-align: center;
+}
