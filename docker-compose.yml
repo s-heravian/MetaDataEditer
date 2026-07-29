@@ -6,18 +6,18 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
-      # Map an uploads directory that both backend and frontend can potentially use, 
-      # though here backend will manage it inside the container.
-      - ./uploads:/app/uploads
+      - uploads_data:/app/uploads
     environment:
       - PYTHONUNBUFFERED=1
+    restart: unless-stopped
 
   frontend:
-    image: nginx:alpine
+    build: ./frontend
     ports:
       - "8080:80"
-    volumes:
-      - ./frontend:/usr/share/nginx/html
     depends_on:
       - backend
+    restart: unless-stopped
+
+volumes:
+  uploads_data:
