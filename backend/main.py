@@ -188,23 +188,33 @@ async def process_file(file_name: str, target_country: str = "DE"):
         processed_path = os.path.join(UPLOAD_DIR, f"processed_{file_name}")
         shutil.copy(file_path, processed_path)
         
-        # 1. Read metadata from original
-        result = subprocess.run(["exiftool", "-j", file_path], stdout=subprocess.PIPE, text=True)
+        if target_country not in EUROPEAN_COUNTRIES:
+            target_country = "DE"
+        country_data = EUROPEAN_COUNTRIES[target_country]
+
+        # Dynamically set container environment timezone for Exiftool processes
+        env = os.environ.copy()
+        env['TZ'] = country_data['tz']
+        
+        # 1. Read metadata from original (with -G to get exact groups like PDF:ModifyDate)
+        result = subprocess.run(["exiftool", "-j", "-G", file_path], stdout=subprocess.PIPE, text=True, env=env)
         metadata = json.loads(result.stdout) if result.stdout else [{}]
         file_metadata = metadata[0] if isinstance(metadata, list) and len(metadata) > 0 else {}
         
         has_iran = is_iran_related(file_metadata)
         
-        if target_country not in EUROPEAN_COUNTRIES:
-            target_country = "DE"
-        country_data = EUROPEAN_COUNTRIES[target_country]
-        
         # Get appropriate timezone offset (handling DST)
-        date_str = file_metadata.get('DateTimeOriginal') or file_metadata.get('CreateDate') or file_metadata.get('ModifyDate') or file_metadata.get('FileModifyDate')
+        # Check standard date keys (now they might have group prefixes like XMP:CreateDate)
+        date_str = None
+        for key in ['EXIF:DateTimeOriginal', 'XMP:CreateDate', 'PDF:CreateDate', 'System:ModifyDate', 'File:FileModifyDate']:
+            if key in file_metadata:
+                date_str = file_metadata[key]
+                break
+        
         country_offset = get_country_offset(date_str, target_country)
         
         # 2. Strip all metadata
-        subprocess.run(["exiftool", "-all=", "-overwrite_original", processed_path], check=True)
+        subprocess.run(["exiftool", "-all=", "-overwrite_original", processed_path], check=True, env=env)
         
         # 3. If Iran detected, add spoofed metadata
         if has_iran:
@@ -212,7 +222,7 @@ async def process_file(file_name: str, target_country: str = "DE"):
             lon_ref = 'W' if lon_str.startswith('-') else 'E'
             lon_val = lon_str.replace('-', '')
             
-            subprocess.run([
+            exif_cmd = [
                 "exiftool", 
                 f"-GPSLatitude={country_data['lat']}", 
                 f"-GPSLongitude={lon_val}",
@@ -224,12 +234,24 @@ async def process_file(file_name: str, target_country: str = "DE"):
                 f"-OffsetTimeDigitized={country_offset}",
                 f"-Country={country_data['name']}",
                 f"-CountryCode={target_country}",
-                f"-Language={country_data['lang']}",
-                "-overwrite_original", 
-                processed_path
-            ], check=True)
+                f"-Language={country_data['lang']}"
+            ]
             
-        return FileResponse(processed_path, media_type='application/octet-stream', filename=f"processed_{file_name}")
+            # Find and overwrite any embedded date strings that contain Iran timezones
+            for key, val in file_metadata.items():
+                if isinstance(val, str) and ('+03:30' in val or '+04:30' in val):
+                    new_val = val.replace('+03:30', country_offset).replace('+04:30', country_offset)
+                    # Skip file system tags, ExifTool handles them based on the OS timezone or throws errors
+                    if not key.startswith('File:'):
+                        exif_cmd.append(f"-{key}={new_val}")
+                        
+            exif_cmd.extend(["-overwrite_original", processed_path])
+            
+            subprocess.run(exif_cmd, check=True, env=env)
+            
+        # Download filename clean up to assure no traces of original Persian filename
+        download_name = f"Document_{uuid.uuid4().hex[:8]}.pdf" if processed_path.lower().endswith('.pdf') else f"Media_{uuid.uuid4().hex[:8]}{os.path.splitext(processed_path)[1]}"
+        return FileResponse(processed_path, media_type='application/octet-stream', filename=download_name)
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
