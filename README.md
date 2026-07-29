@@ -40,18 +40,13 @@ Navigate to `http://localhost:8080` in your web browser.
 If you only want to run the application using pre-built images from GitHub Container Registry (GHCR), you **do not need to clone the entire repository**.
 
 **Steps to deploy on your server:**
-1. Generate a **Personal Access Token (PAT)** in GitHub with `read:packages` permissions.
-2. Login to GHCR on your server:
+1. Download the production compose file directly:
    ```bash
-   echo "YOUR_GITHUB_PAT" | docker login ghcr.io -u s-heravian --password-stdin
+   curl -o docker-compose.yml https://raw.githubusercontent.com/s-heravian/MetaDataEditer/main/docker-compose.prod.yml
    ```
-3. Download the production compose file directly:
+2. Start the services:
    ```bash
-   curl -O https://raw.githubusercontent.com/s-heravian/MetaDataEditer/main/docker-compose.prod.yml
-   ```
-4. Start the services:
-   ```bash
-   docker compose -f docker-compose.prod.yml up -d
+   docker compose up -d
    ```
 
 ---
