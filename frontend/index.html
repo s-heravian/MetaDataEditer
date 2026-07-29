@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استخراج‌کننده متادیتا | Metadata Extractor</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <main class="container">
+        <header class="glass-panel">
+            <h1><i class="fa-solid fa-fingerprint"></i> استخراج‌کننده متادیتا</h1>
+            <p>فایل خود را آپلود کنید تا تمام اطلاعات پنهان (GPS، سازنده، ابزارها و ...) را استخراج کنیم.</p>
+        </header>
+
+        <section id="upload-section" class="glass-panel drop-zone">
+            <input type="file" id="file-input" hidden>
+            <div class="upload-content">
+                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <h2>فایل خود را اینجا رها کنید</h2>
+                <p>یا برای انتخاب فایل کلیک کنید</p>
+            </div>
+        </section>
+
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+            <p>در حال استخراج متادیتا...</p>
+        </div>
+
+        <section id="result-section" class="glass-panel hidden">
+            <div class="result-header">
+                <h2><i class="fa-solid fa-table-list"></i> اطلاعات استخراج شده</h2>
+                <button id="cleanup-btn" class="btn btn-danger"><i class="fa-solid fa-trash"></i> پایان کار و حذف فایل</button>
+            </div>
+            
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="search-input" placeholder="جستجو در متادیتا (مثلا GPS)...">
+            </div>
+
+            <div class="table-container">
+                <table id="metadata-table">
+                    <thead>
+                        <tr>
+                            <th>ویژگی (تگ)</th>
+                            <th>مقدار</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
