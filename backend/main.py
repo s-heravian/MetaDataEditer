@@ -20,6 +20,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+EUROPEAN_COUNTRIES = {
+    "DE": {
+        "name": "Germany", "lat": "52.5200", "lon": "13.4050", "tz": "Europe/Berlin", "lang": "de-DE", "std_offset": "+01:00", "dst_offset": "+02:00"
+    },
+    "FR": {
+        "name": "France", "lat": "48.8566", "lon": "2.3522", "tz": "Europe/Paris", "lang": "fr-FR", "std_offset": "+01:00", "dst_offset": "+02:00"
+    },
+    "GB": {
+        "name": "United Kingdom", "lat": "51.5074", "lon": "-0.1278", "tz": "Europe/London", "lang": "en-GB", "std_offset": "+00:00", "dst_offset": "+01:00"
+    },
+    "NL": {
+        "name": "Netherlands", "lat": "52.3676", "lon": "4.9041", "tz": "Europe/Amsterdam", "lang": "nl-NL", "std_offset": "+01:00", "dst_offset": "+02:00"
+    },
+    "IT": {
+        "name": "Italy", "lat": "41.9028", "lon": "12.4964", "tz": "Europe/Rome", "lang": "it-IT", "std_offset": "+01:00", "dst_offset": "+02:00"
+    }
+}
+
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -141,8 +159,8 @@ def is_iran_related(metadata: dict) -> bool:
 
     return search_dict(metadata)
 
-def get_germany_offset(date_str) -> str:
-    """Calculates Germany timezone offset considering DST based on the given date string."""
+def get_country_offset(date_str, country_code: str) -> str:
+    """Calculates country timezone offset considering DST based on the given date string."""
     month = datetime.datetime.now().month
     if date_str and isinstance(date_str, str):
         try:
@@ -151,14 +169,16 @@ def get_germany_offset(date_str) -> str:
             month = int(date_part.split(':')[1])
         except:
             pass
-    # Germany DST approximation: April to October (inclusive 4 to 10)
+            
+    country_data = EUROPEAN_COUNTRIES.get(country_code, EUROPEAN_COUNTRIES["DE"])
+    # Europe DST approximation: April to October (inclusive 4 to 10)
     if 4 <= month <= 10:
-        return "+02:00"
-    return "+01:00"
+        return country_data["dst_offset"]
+    return country_data["std_offset"]
 
 @app.get("/process/{file_name}")
-async def process_file(file_name: str):
-    """Processes the file to remove unnecessary metadata and change Iran to Germany if needed."""
+async def process_file(file_name: str, target_country: str = "DE"):
+    """Processes the file to remove unnecessary metadata and spoof country if needed."""
     file_path = os.path.join(UPLOAD_DIR, file_name)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
@@ -171,29 +191,36 @@ async def process_file(file_name: str):
         
         has_iran = is_iran_related(file_metadata)
         
-        # Get appropriate Germany timezone offset (handling DST)
+        if target_country not in EUROPEAN_COUNTRIES:
+            target_country = "DE"
+        country_data = EUROPEAN_COUNTRIES[target_country]
+        
+        # Get appropriate timezone offset (handling DST)
         date_str = file_metadata.get('DateTimeOriginal') or file_metadata.get('CreateDate') or file_metadata.get('ModifyDate') or file_metadata.get('FileModifyDate')
-        germany_offset = get_germany_offset(date_str)
+        country_offset = get_country_offset(date_str, target_country)
         
         # 2. Strip all metadata (keeps the original file safe in a temp way, but we use -overwrite_original)
         subprocess.run(["exiftool", "-all=", "-overwrite_original", file_path], check=True)
         
-        # 3. If Iran detected, add Germany metadata
+        # 3. If Iran detected, add spoofed metadata
         if has_iran:
-            # Berlin coordinates and timezone
+            lon_str = country_data['lon']
+            lon_ref = 'W' if lon_str.startswith('-') else 'E'
+            lon_val = lon_str.replace('-', '')
+            
             subprocess.run([
                 "exiftool", 
-                "-GPSLatitude=52.5200", 
-                "-GPSLongitude=13.4050",
+                f"-GPSLatitude={country_data['lat']}", 
+                f"-GPSLongitude={lon_val}",
                 "-GPSLatitudeRef=N",
-                "-GPSLongitudeRef=E",
-                "-TimeZone=Europe/Berlin",
-                f"-OffsetTime={germany_offset}",
-                f"-OffsetTimeOriginal={germany_offset}",
-                f"-OffsetTimeDigitized={germany_offset}",
-                "-Country=Germany",
-                "-CountryCode=DE",
-                "-Language=de-DE",
+                f"-GPSLongitudeRef={lon_ref}",
+                f"-TimeZone={country_data['tz']}",
+                f"-OffsetTime={country_offset}",
+                f"-OffsetTimeOriginal={country_offset}",
+                f"-OffsetTimeDigitized={country_offset}",
+                f"-Country={country_data['name']}",
+                f"-CountryCode={target_country}",
+                f"-Language={country_data['lang']}",
                 "-overwrite_original", 
                 file_path
             ], check=True)
