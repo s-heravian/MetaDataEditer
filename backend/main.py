@@ -225,23 +225,41 @@ async def process_file(file_name: str, target_country: str = 'DE'):
         
         country_offset = get_country_offset(date_str, target_country)
         
+        # Identify safe software metadata to retain
+        safe_software_tags = {}
+        suspicious_keywords = ['photoshop', 'illustrator', 'gimp', 'corel', 'lightroom', 'premiere', 'after effects', 'canva']
+        for tag in ['PDF:Creator', 'PDF:Producer', 'XMP:CreatorTool', 'EXIF:Software']:
+            if tag in file_metadata:
+                val = str(file_metadata[tag])
+                if not any(k in val.lower() for k in suspicious_keywords):
+                    # Keep only if it doesn't leak Iran
+                    if not is_iran_related({tag: val}):
+                        safe_software_tags[tag] = val
+
         # 2. Strip all metadata (and suppress ExifTool signature)
         subprocess.run(["exiftool", "-all=", "-XMPToolkit=", "-overwrite_original", processed_path], check=True, env=env)
         
-        # 3. If Iran detected, add replacement metadata
+        # 3. Add replacement metadata and restore safe software tags
         is_pdf = processed_path.lower().endswith('.pdf')
+        exif_cmd = ["exiftool", "-XMPToolkit="]
+        
+        # Inject a random DocumentID to guarantee unique file hashes and varying byte structures on every run
+        import uuid
+        exif_cmd.append(f"-XMP:DocumentID=uuid:{uuid.uuid4()}")
+        exif_cmd.append(f"-XMP:InstanceID=uuid:{uuid.uuid4()}")
+        
+        for tag, val in safe_software_tags.items():
+            exif_cmd.append(f"-{tag}={val}")
+            
         if has_iran:
             import random
             
-            # Base command: Timezones and stripping ExifTool signature
-            exif_cmd = [
-                "exiftool", 
+            exif_cmd.extend([
                 f"-TimeZone={country_data['tz']}",
                 f"-OffsetTime={country_offset}",
                 f"-OffsetTimeOriginal={country_offset}",
-                f"-OffsetTimeDigitized={country_offset}",
-                "-XMPToolkit="
-            ]
+                f"-OffsetTimeDigitized={country_offset}"
+            ])
             
             # System-generated PDFs (like bills) rarely have GPS/Country metadata.
             if not is_pdf:
@@ -272,6 +290,7 @@ async def process_file(file_name: str, target_country: str = 'DE'):
                     if not key.startswith('File:'):
                         exif_cmd.append(f"-{key}={new_val}")
                         
+        if len(exif_cmd) > 2: # More than just base commands
             exif_cmd.extend(["-overwrite_original", processed_path])
             subprocess.run(exif_cmd, check=True, env=env)
             
