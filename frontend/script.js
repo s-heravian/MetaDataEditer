@@ -103,7 +103,7 @@ document.getElementById('cancel-office-btn').addEventListener('click', () => {
 
 document.getElementById('view-meta-btn').addEventListener('click', async () => {
     document.getElementById('office-modal').classList.add('hidden');
-    document.querySelector('.action-controls').classList.add('hidden'); // Hide spoofing dropdown
+    document.querySelector('.action-controls').classList.add('hidden'); // Hide replacement dropdown
     document.getElementById('download-btn').classList.add('hidden'); // Hide download button
     // The cleanup button remains visible within the action-bar
     

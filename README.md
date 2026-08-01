@@ -1,18 +1,18 @@
-# Metadata Editer & Spoofer
+# Metadata Editer & Replacer
 
-A containerized, high-performance forensic tool for safely extracting, anonymizing, and spoofing metadata from files. It ensures total privacy by wiping hidden geographic and system footprints (EXIF, XMP, PDF dictionaries) and replacing them with untraceable, realistic European identities.
+A containerized, high-performance forensic tool for safely extracting, anonymizing, and replacing metadata from files. It ensures total privacy by wiping hidden geographic and system footprints (EXIF, XMP, PDF dictionaries) and replacing them with untraceable, realistic European identities.
 
 ## ✨ Features
 - **Total Metadata Wiping:** Safely strips out tracking, device-specific, and unnecessary EXIF/XMP metadata from files (Images, PDFs, etc.).
 - **Smart Geographic Detection:** Automatically detects footprints indicating an origin from Iran (keywords, GPS bounding boxes, timezones).
-- **Multi-Country Spoofing:** Injects flawless, realistic metadata (Coordinates, exact Timezone Offsets with DST logic, Language Codes) for any selected target country:
+- **Multi-Country Replacement:** Injects flawless, realistic metadata (Coordinates, exact Timezone Offsets with DST logic, Language Codes) for any selected target country:
   - 🇩🇪 Germany (Berlin)
   - 🇫🇷 France (Paris)
   - 🇬🇧 United Kingdom (London)
   - 🇳🇱 Netherlands (Amsterdam)
   - 🇮🇹 Italy (Rome)
 - **Deep Forensic Hardening:** Unlike basic tools, it dives into nested PDF dictionaries and uses isolated Docker container timezones to perfectly sync system-level file attributes (like `ModifyDate`) to the target country.
-- **Dynamic File Regeneration:** Generate multiple spoofed versions of the same file securely without overwriting the original file on the server.
+- **Dynamic File Regeneration:** Generate multiple modified versions of the same file securely without overwriting the original file on the server.
 - **Clean Naming:** Automatically assigns unique IDs to downloaded files, guaranteeing no trace of original names (e.g., Persian characters or internal IDs).
 
 ---

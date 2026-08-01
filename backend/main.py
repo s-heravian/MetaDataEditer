@@ -228,7 +228,7 @@ async def process_file(file_name: str, target_country: str = 'DE'):
         # 2. Strip all metadata (and suppress ExifTool signature)
         subprocess.run(["exiftool", "-all=", "-XMPToolkit=", "-overwrite_original", processed_path], check=True, env=env)
         
-        # 3. If Iran detected, add spoofed metadata
+        # 3. If Iran detected, add replacement metadata
         is_pdf = processed_path.lower().endswith('.pdf')
         if has_iran:
             import random
