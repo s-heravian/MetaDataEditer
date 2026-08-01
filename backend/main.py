@@ -219,29 +219,44 @@ async def process_file(file_name: str, target_country: str = 'DE'):
         
         country_offset = get_country_offset(date_str, target_country)
         
-        # 2. Strip all metadata
-        subprocess.run(["exiftool", "-all=", "-overwrite_original", processed_path], check=True, env=env)
+        # 2. Strip all metadata (and suppress ExifTool signature)
+        subprocess.run(["exiftool", "-all=", "-XMPToolkit=", "-overwrite_original", processed_path], check=True, env=env)
         
         # 3. If Iran detected, add spoofed metadata
+        is_pdf = processed_path.lower().endswith('.pdf')
         if has_iran:
-            lon_str = country_data['lon']
-            lon_ref = 'W' if lon_str.startswith('-') else 'E'
-            lon_val = lon_str.replace('-', '')
+            import random
             
+            # Base command: Timezones and stripping ExifTool signature
             exif_cmd = [
                 "exiftool", 
-                f"-GPSLatitude={country_data['lat']}", 
-                f"-GPSLongitude={lon_val}",
-                "-GPSLatitudeRef=N",
-                f"-GPSLongitudeRef={lon_ref}",
                 f"-TimeZone={country_data['tz']}",
                 f"-OffsetTime={country_offset}",
                 f"-OffsetTimeOriginal={country_offset}",
                 f"-OffsetTimeDigitized={country_offset}",
-                f"-Country={country_data['name']}",
-                f"-CountryCode={target_country}",
-                f"-Language={country_data['lang']}"
+                "-XMPToolkit="
             ]
+            
+            # System-generated PDFs (like bills) rarely have GPS/Country metadata.
+            if not is_pdf:
+                # Add random jitter so coordinates aren't exactly the same every time
+                lat_jitter = random.uniform(-0.015, 0.015)
+                lon_jitter = random.uniform(-0.015, 0.015)
+                new_lat = float(country_data['lat']) + lat_jitter
+                new_lon = float(country_data['lon']) + lon_jitter
+                
+                lat_ref = 'S' if new_lat < 0 else 'N'
+                lon_ref = 'W' if new_lon < 0 else 'E'
+                
+                exif_cmd.extend([
+                    f"-GPSLatitude={abs(new_lat)}", 
+                    f"-GPSLongitude={abs(new_lon)}",
+                    f"-GPSLatitudeRef={lat_ref}",
+                    f"-GPSLongitudeRef={lon_ref}",
+                    f"-Country={country_data['name']}",
+                    f"-CountryCode={target_country}",
+                    f"-Language={country_data['lang']}"
+                ])
             
             # Find and overwrite any embedded date strings that contain Iran timezones
             for key, val in file_metadata.items():
@@ -252,11 +267,20 @@ async def process_file(file_name: str, target_country: str = 'DE'):
                         exif_cmd.append(f"-{key}={new_val}")
                         
             exif_cmd.extend(["-overwrite_original", processed_path])
-            
             subprocess.run(exif_cmd, check=True, env=env)
             
+        if is_pdf:
+            # Flatten PDF to remove incremental updates (e.g. multiple %%EOF from ExifTool post-processing)
+            linearized_path = os.path.join(UPLOAD_DIR, f"lin_{uuid.uuid4().hex[:8]}.pdf")
+            try:
+                subprocess.run(["qpdf", "--linearize", processed_path, linearized_path], check=True)
+                os.remove(processed_path)
+                processed_path = linearized_path
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                pass
+            
         # Download filename clean up to assure no traces of original Persian filename
-        download_name = f"Document_{uuid.uuid4().hex[:8]}.pdf" if processed_path.lower().endswith('.pdf') else f"Media_{uuid.uuid4().hex[:8]}{os.path.splitext(processed_path)[1]}"
+        download_name = f"Document_{uuid.uuid4().hex[:8]}.pdf" if is_pdf else f"Media_{uuid.uuid4().hex[:8]}{os.path.splitext(processed_path)[1]}"
         return FileResponse(processed_path, media_type='application/octet-stream', filename=download_name)
         
     except subprocess.CalledProcessError as e:
