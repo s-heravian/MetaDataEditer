@@ -35,6 +35,12 @@ EUROPEAN_COUNTRIES = {
     },
     "IT": {
         "name": "Italy", "lat": "41.9028", "lon": "12.4964", "tz": "Europe/Rome", "lang": "it-IT", "std_offset": "+01:00", "dst_offset": "+02:00"
+    },
+    "AE": {
+        "name": "United Arab Emirates", "lat": "25.2048", "lon": "55.2708", "tz": "Asia/Dubai", "lang": "ar-AE", "std_offset": "+04:00", "dst_offset": "+04:00"
+    },
+    "HK": {
+        "name": "Hong Kong", "lat": "22.3193", "lon": "114.1694", "tz": "Asia/Hong_Kong", "lang": "zh-HK", "std_offset": "+08:00", "dst_offset": "+08:00"
     }
 }
 
