@@ -3,6 +3,10 @@ name: Publish Docker Images to GHCR
 on:
   release:
     types: [published, edited]
+  push:
+    tags:
+      - 'V*'
+      - 'v*'
   workflow_dispatch:
 
 env:

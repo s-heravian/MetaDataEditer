@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: ghcr.io/s-heravian/metadataediter-backend:latest
+    image: ghcr.io/s-heravian/metadataextractor-backend:latest
     ports:
       - "8000:8000"
     environment:
@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: ghcr.io/s-heravian/metadataediter-frontend:latest
+    image: ghcr.io/s-heravian/metadataextractor-frontend:latest
     ports:
       - "8080:80"
     depends_on:

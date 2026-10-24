@@ -30,8 +30,8 @@ You can run this project locally or deploy it on a VPS. It uses a FastAPI backen
 ### 1. Local Deployment (Development / Testing)
 Clone the repository and run the pre-configured docker-compose:
 ```bash
-git clone https://github.com/s-heravian/MetaDataEditer.git
-cd MetaDataEditer
+git clone https://github.com/s-heravian/MetaDataExtractor.git
+cd MetaDataExtractor
 docker compose up -d --build
 ```
 Navigate to `http://localhost:8080` in your web browser.
@@ -42,12 +42,20 @@ If you only want to run the application using pre-built images from GitHub Conta
 **Steps to deploy on your server:**
 1. Download the production compose file directly:
    ```bash
-   curl -o docker-compose.yml https://raw.githubusercontent.com/s-heravian/MetaDataEditer/main/docker-compose.prod.yml
+   curl -o docker-compose.yml https://raw.githubusercontent.com/s-heravian/MetaDataExtractor/main/docker-compose.prod.yml
    ```
 2. Start the services:
    ```bash
    docker compose up -d
    ```
+
+---
+
+## 🔒 Security & Maintenance (V2.2.2)
+- **Backend Base Runtime:** Upgraded to `python:3.12-slim` with latest OS packages, ca-certificates, and pip dependencies.
+- **Dependency Hardening:** Upgraded `python-multipart` (>=0.0.20) to eliminate multipart parsing vulnerabilities (CVE-2024-24762, CVE-2024-53981), along with `fastapi` (>=0.115.0), `pydantic` (>=2.10.0), and `uvicorn` (>=0.32.0).
+- **Frontend Base Image:** Upgraded `nginx:alpine` with full package security upgrades (`apk upgrade --no-cache`).
+- **Automated CI/CD:** Added tag-triggered GHCR container builds (`V*`).
 
 ---
 

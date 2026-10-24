@@ -220,7 +220,17 @@ downloadBtn.addEventListener('click', async () => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
         
-        alert('فایل پردازش شد و در حال دانلود است. تمام متادیتاهای غیرضروری حذف شده و در صورت لزوم موقعیت ایران به آلمان تغییر یافته است.');
+        const countryNames = {
+            'DE': 'آلمان',
+            'FR': 'فرانسه',
+            'GB': 'انگلستان',
+            'NL': 'هلند',
+            'IT': 'ایتالیا',
+            'AE': 'امارات متحده عربی',
+            'HK': 'هنگ کنگ'
+        };
+        const countryName = countryNames[targetCountry] || 'کشور مقصد';
+        alert(`فایل پردازش شد و در حال دانلود است. تمام متادیتاهای غیرضروری حذف شده و در صورت لزوم موقعیت جغرافیایی به ${countryName} تغییر یافت.`);
     } catch (error) {
         alert(error.message);
     } finally {
